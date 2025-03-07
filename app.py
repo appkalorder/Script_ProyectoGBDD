@@ -16,6 +16,25 @@ def query_to_dataframe(query):
     return df
 
 # Funciones para las gráficas
+def create_bar_chart(df, x_column, y_column, title, x_label, y_label, color, orient='v'):
+    fig, ax = plt.subplots()
+    if orient == 'v':
+        ax.bar(df[x_column], df[y_column], color=color)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_xticklabels(df[x_column], rotation=45, ha='right')
+    else:
+        ax.barh(df[x_column], df[y_column], color=color)
+        ax.set_ylabel(x_label)
+        ax.set_xlabel(y_label)
+        ax.invert_yaxis()
+    ax.set_title(title)
+    plt.subplots_adjust(bottom=0.25)
+
+    canvas = FigureCanvasTkAgg(fig, master=frame_graficas)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
 def moto_mas_vendida():
     query = """
     SELECT m.brand || ' ' || m.model AS moto, COUNT(s.motorcycle_id) AS total_vendidos
@@ -25,18 +44,7 @@ def moto_mas_vendida():
     ORDER BY total_vendidos DESC;
     """
     df = query_to_dataframe(query)
-    fig, ax = plt.subplots()
-    ax.bar(df['moto'], df['total_vendidos'], color='blue')
-    ax.set_xlabel('Moto')
-    ax.set_ylabel('Cantidad Vendida')
-    ax.set_title('Moto más vendida en el año')
-    ax.set_xticks(range(len(df['moto'])))
-    ax.set_xticklabels(df['moto'], rotation=45, ha='right')
-    plt.subplots_adjust(bottom=0.39)
-
-    canvas = FigureCanvasTkAgg(fig, master=frame_graficas)  # Llama al Frame de gráficas
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    create_bar_chart(df, 'moto', 'total_vendidos', 'Moto más vendida en el año', 'Moto', 'Cantidad Vendida', 'blue')
 
 def mes_mas_vendido():
     query = """
@@ -46,18 +54,7 @@ def mes_mas_vendido():
     ORDER BY total_ventas DESC
     """
     df = query_to_dataframe(query)
-    fig, ax = plt.subplots()
-    ax.bar(df['mes'], df['total_ventas'], color='green')
-    ax.set_xlabel('Mes')
-    ax.set_ylabel('Ventas')
-    ax.set_title('Mes con más ventas')
-    ax.set_xticks(range(len(df['mes'])))
-    ax.set_xticklabels(df['mes'], rotation=45)
-    plt.subplots_adjust(bottom=0.25)
-
-    canvas = FigureCanvasTkAgg(fig, master=frame_graficas)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    create_bar_chart(df, 'mes', 'total_ventas', 'Mes con más ventas', 'Mes', 'Ventas', 'green')
 
 def dia_mas_vendido():
     query = """
@@ -68,18 +65,7 @@ def dia_mas_vendido():
     LIMIT 10
     """
     df = query_to_dataframe(query)
-    fig, ax = plt.subplots()
-    ax.bar(df['sale_date'], df['total_ventas'], color='red')
-    ax.set_xlabel('Fecha')
-    ax.set_ylabel('Ventas')
-    ax.set_title('Días con más ventas')
-    ax.set_xticks(range(len(df['sale_date'])))
-    ax.set_xticklabels(df['sale_date'], rotation=45, ha='right')
-    plt.subplots_adjust(bottom=0.25)
-
-    canvas = FigureCanvasTkAgg(fig, master=frame_graficas)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    create_bar_chart(df, 'sale_date', 'total_ventas', 'Días con más ventas', 'Fecha', 'Ventas', 'red')
 
 def cliente_que_mas_compro():
     query = """
@@ -91,16 +77,7 @@ def cliente_que_mas_compro():
     LIMIT 10
     """
     df = query_to_dataframe(query)
-    fig, ax = plt.subplots()
-    ax.barh(df['name'], df['total_compras'], color='purple')
-    ax.set_xlabel('Total Compras')
-    ax.set_ylabel('Cliente')
-    ax.set_title('Cliente que más compró')
-    ax.invert_yaxis()
-
-    canvas = FigureCanvasTkAgg(fig, master=frame_graficas)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    create_bar_chart(df, 'name', 'total_compras', 'Cliente que más compró', 'Cliente', 'Total Compras', 'purple', orient='h')
 
 # Función para limpiar el Frame de gráficas
 def clear_graph():
@@ -118,7 +95,7 @@ root.title("Gestión de Ventas - MotoPower")
 root.geometry("1000x600")
 
 # Crear un Frame para el menú
-frame_menu = tk.Frame(root, width=250, bg="lightgray")
+frame_menu = tk.Frame(root, width=250, bg="#223843")
 frame_menu.pack(side=tk.LEFT, fill=tk.Y)
 
 # Crear un Frame para las gráficas
@@ -126,24 +103,26 @@ frame_graficas = tk.Frame(root, width=750)
 frame_graficas.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
 # Título
-label = tk.Label(frame_menu, text="Seleccione una consulta", font=("Arial", 14), bg="lightgray")
+label = tk.Label(frame_menu, text="Gestion de Datos - MotoPower", font=("Helvetica", 13), bg="#223843" , fg="white")
 label.pack(pady=10)
 
-# Botones
-btn1 = ttk.Button(frame_menu, text="Moto más vendida", command=lambda: [clear_graph(), moto_mas_vendida()])
-btn1.pack(pady=5)
+# Estilo personalizado para los botones
+style = ttk.Style()
+style.configure('Custom.TButton', font=('Helvetica', 10), padding=10, width=20)
 
-btn2 = ttk.Button(frame_menu, text="Mes con más ventas", command=lambda: [clear_graph(), mes_mas_vendido()])
-btn2.pack(pady=5)
+# Botones personalizados
+buttons = [
+    ("Moto más vendida", moto_mas_vendida, '#d8b4a0'),
+    ("Mes con más ventas", mes_mas_vendido, '#d8b4a0'),
+    ("Día con más ventas", dia_mas_vendido, '#d8b4a0'),
+    ("Cliente que más compró", cliente_que_mas_compro, '#d8b4a0'),
+    ("Salir", on_closing, '#d8b4a0')
+]
 
-btn3 = ttk.Button(frame_menu, text="Día con más ventas", command=lambda: [clear_graph(), dia_mas_vendido()])
-btn3.pack(pady=5)
-
-btn4 = ttk.Button(frame_menu, text="Cliente que más compró", command=lambda: [clear_graph(), cliente_que_mas_compro()])
-btn4.pack(pady=5)
-
-btn_exit = ttk.Button(frame_menu, text="Salir", command=on_closing)
-btn_exit.pack(pady=20)
+for text, command, color in buttons:
+    
+    btn = tk.Button(frame_menu, text=text, command=lambda c=command: [clear_graph(), c()], bg=color, fg='#223843', font=('Helvetica', 12, 'bold'), width=20, height=2)
+    btn.pack(pady=5)
 
 # Vincular la función de cierre a la ventana
 root.protocol("WM_DELETE_WINDOW", on_closing)
