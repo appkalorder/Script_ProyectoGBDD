@@ -79,6 +79,18 @@ def cliente_que_mas_compro():
     df = query_to_dataframe(query)
     create_bar_chart(df, 'name', 'total_compras', 'Cliente que más compró', 'Cliente', 'Total Compras', 'purple', orient='h')
 
+def vendedor_con_mas_ventas():
+    query = """
+    SELECT sp.first_name || ' ' || sp.last_name AS vendedor, COUNT(s.salesperson_id) AS total_ventas
+    FROM sales s
+    JOIN salespersons sp ON s.salesperson_id = sp.id
+    GROUP BY sp.first_name, sp.last_name
+    ORDER BY total_ventas DESC
+    LIMIT 10
+    """
+    df = query_to_dataframe(query)
+    create_bar_chart(df, 'vendedor', 'total_ventas', 'Vendedor con más ventas', 'Vendedor', 'Total Ventas', 'orange', orient='h')
+
 # Función para limpiar el Frame de gráficas
 def clear_graph():
     for widget in frame_graficas.winfo_children():
@@ -92,7 +104,8 @@ def on_closing():
 # Configuración de la ventana
 root = tk.Tk()
 root.title("Gestión de Ventas - MotoPower")
-root.geometry("1000x600")
+root.attributes('-fullscreen', True)  # Abrir en pantalla completa
+root.minsize(1000, 600)  # Tamaño mínimo de la ventana
 
 # Crear un Frame para el menú
 frame_menu = tk.Frame(root, width=250, bg="#223843")
@@ -116,11 +129,11 @@ buttons = [
     ("Mes con más ventas", mes_mas_vendido, '#d8b4a0'),
     ("Día con más ventas", dia_mas_vendido, '#d8b4a0'),
     ("Cliente que más compró", cliente_que_mas_compro, '#d8b4a0'),
+    ("Vendedor con más ventas", vendedor_con_mas_ventas, '#d8b4a0'),
     ("Salir", on_closing, '#d8b4a0')
 ]
 
 for text, command, color in buttons:
-    
     btn = tk.Button(frame_menu, text=text, command=lambda c=command: [clear_graph(), c()], bg=color, fg='#223843', font=('Helvetica', 12, 'bold'), width=20, height=2)
     btn.pack(pady=5)
 
